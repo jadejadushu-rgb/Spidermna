@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Spider-Man Climb</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: skyblue;
+    }
+    canvas {
+      display: block;
+      background: linear-gradient(skyblue, lightgray);
+    }
+    #playBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      padding: 15px 30px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="playBtn">Play</button>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let gameRunning = false;
+    let spiderman = { x: 100, y: canvas.height / 2, size: 40, vy: 0 };
+    let buildings = [];
+    let gap = 200;
+    let speed = 3;
+
+    function createBuildings() {
+      buildings = [];
+      let x = 0;
+      for (let i = 0; i < 10; i++) {
+        let h = Math.random() * (canvas.height / 2) + 100;
+        buildings.push({ x: x, y: canvas.height - h, w: 150, h: h });
+        x += 150 + gap;
+      }
+    }
+
+    function drawSpiderman() {
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(spiderman.x, spiderman.y, spiderman.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "black";
+      ctx.beginPath();
+      ctx.moveTo(spiderman.x, 0);
+      ctx.lineTo(spiderman.x, spiderman.y);
+      ctx.stroke();
+    }
+
+    function drawBuildings() {
+      ctx.fillStyle = "gray";
+      buildings.forEach(b => {
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+      });
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBuildings();
+      drawSpiderman();
+
+      buildings.forEach(b => {
+        b.x -= speed;
+      });
+
+      if (spiderman.y < spiderman.size) spiderman.y = spiderman.size;
+      if (spiderman.y > canvas.height - spiderman.size) spiderman.y = canvas.height - spiderman.size;
+
+      requestAnimationFrame(update);
+    }
+
+    let touchStartY = 0;
+    canvas.addEventListener("touchstart", e => {
+      touchStartY = e.touches[0].clientY;
+    });
+    canvas.addEventListener("touchmove", e => {
+      let touchY = e.touches[0].clientY;
+      if (touchY < touchStartY) spiderman.y -= 5;
+      else spiderman.y += 5;
+      touchStartY = touchY;
+    });
+
+    document.getElementById("playBtn").addEventListener("click", () => {
+      gameRunning = true;
+      document.getElementById("playBtn").style.display = "none";
+      createBuildings();
+      update();
+    });
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
